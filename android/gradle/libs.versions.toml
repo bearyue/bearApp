@@ -10,6 +10,8 @@ okhttp = "4.12.0"
 navigation = "2.7.7"
 coil = "2.6.0"
 lifecycle = "2.8.2"
+security-crypto = "1.1.0-alpha06"
+biometric = "1.1.0"
 activity-compose = "1.9.0"
 coroutines = "1.8.1"
 core-ktx = "1.13.1"
@@ -58,6 +60,12 @@ okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor",
 
 # Coil
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+
+# Security
+security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "security-crypto" }
+
+# Biometric
+biometric = { group = "androidx.biometric", name = "biometric", version.ref = "biometric" }
 
 # Coroutines
 coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }

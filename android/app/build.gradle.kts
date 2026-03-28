@@ -91,4 +91,10 @@ dependencies {
     // Coroutines
     implementation(libs.coroutines.android)
     implementation(libs.coroutines.core)
+
+    // Security
+    implementation(libs.security.crypto)
+
+    // Biometric
+    implementation(libs.biometric)
 }
