@@ -46,7 +46,7 @@ object BiometricManager {
         val biometricPrompt = BiometricPrompt(activity, executor, callback)
 
         val promptInfo = BiometricPrompt.PromptInfo.Builder()
-            .setTitle("BearAsset 身份验证")
+            .setTitle("BetterBear 身份验证")
             .setSubtitle("使用指纹或面部识别解锁")
             .setNegativeButtonText("使用密码")
             .build()

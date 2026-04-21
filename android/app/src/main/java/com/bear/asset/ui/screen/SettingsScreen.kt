@@ -11,6 +11,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +27,8 @@ import com.bear.asset.ui.auth.BiometricManager
 
 @Composable
 fun SettingsScreen(
+    isLoggedIn: Boolean,
+    onNavigateToLogin: () -> Unit = {},
     onLogout: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
@@ -64,7 +67,7 @@ fun SettingsScreen(
             Text("昵称", style = MaterialTheme.typography.bodyLarge)
             Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = uiState.nickname.ifBlank { "-" },
+                text = uiState.nickname.ifBlank { if (isLoggedIn) "-" else "离线模式" },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -79,7 +82,7 @@ fun SettingsScreen(
             Text("用户名", style = MaterialTheme.typography.bodyLarge)
             Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = uiState.username.ifBlank { "-" },
+                text = uiState.username.ifBlank { if (isLoggedIn) "-" else "未连接服务端" },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -118,19 +121,38 @@ fun SettingsScreen(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Button(
-            onClick = {
-                viewModel.logout()
-                onLogout()
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.error
+        if (isLoggedIn) {
+            Button(
+                onClick = {
+                    viewModel.logout()
+                    onLogout()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Text("退出登录", style = MaterialTheme.typography.bodyLarge)
+            }
+        } else {
+            Text(
+                text = "当前为离线模式，可继续查看和录入本地资产数据。",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-        ) {
-            Text("退出登录", style = MaterialTheme.typography.bodyLarge)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedButton(
+                onClick = onNavigateToLogin,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                Text("连接服务端并登录", style = MaterialTheme.typography.bodyLarge)
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))

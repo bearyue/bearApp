@@ -1,0 +1,84 @@
+package com.bear.asset.ui.screen
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.bear.asset.data.local.entity.AssetEntity
+import com.bear.asset.data.repository.AssetRepository
+import com.bear.asset.domain.model.AssetCategory
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+data class CategoryGroup(
+    val category: AssetCategory,
+    val assets: List<AssetEntity>,
+    val totalAmount: Double,
+    val isExpanded: Boolean = true
+)
+
+@HiltViewModel
+class AssetViewModel @Inject constructor(
+    private val repository: AssetRepository
+) : ViewModel() {
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    private val _expandedCategories = MutableStateFlow(AssetCategory.entries.toSet())
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val categoryGroups: StateFlow<List<CategoryGroup>> = _searchQuery
+        .flatMapLatest { query ->
+            if (query.isBlank()) {
+                repository.getAllAssets()
+            } else {
+                repository.searchAssets(query)
+            }
+        }
+        .map { assets ->
+            val expanded = _expandedCategories.value
+            AssetCategory.entries.mapNotNull { category ->
+                val categoryAssets = assets.filter { it.category == category.name }
+                if (categoryAssets.isEmpty()) return@mapNotNull null
+                CategoryGroup(
+                    category = category,
+                    assets = categoryAssets,
+                    totalAmount = categoryAssets.sumOf { it.amountCny },
+                    isExpanded = expanded.contains(category)
+                )
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val isEmpty: StateFlow<Boolean> = categoryGroups
+        .map { it.isEmpty() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    fun updateSearch(query: String) {
+        _searchQuery.value = query
+    }
+
+    fun toggleCategory(category: AssetCategory) {
+        val current = _expandedCategories.value.toMutableSet()
+        if (current.contains(category)) {
+            current.remove(category)
+        } else {
+            current.add(category)
+        }
+        _expandedCategories.value = current
+    }
+
+    fun deleteAsset(asset: AssetEntity) {
+        viewModelScope.launch {
+            repository.deleteAsset(asset)
+        }
+    }
+}

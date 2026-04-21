@@ -20,5 +20,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "BearAsset"
+rootProject.name = "BetterBear"
 include(":app")

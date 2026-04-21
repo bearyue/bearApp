@@ -3,6 +3,8 @@ package com.bear.asset.di
 import android.content.Context
 import androidx.room.Room
 import com.bear.asset.data.local.AppDatabase
+import com.bear.asset.data.local.dao.AssetDao
+import com.bear.asset.data.local.dao.NetWorthSnapshotDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,6 +23,18 @@ object DatabaseModule {
             context,
             AppDatabase::class.java,
             "bear_asset_db"
-        ).build()
+        )
+            .addMigrations(AppDatabase.MIGRATION_1_2)
+            .build()
+    }
+
+    @Provides
+    fun provideAssetDao(database: AppDatabase): AssetDao {
+        return database.assetDao()
+    }
+
+    @Provides
+    fun provideNetWorthSnapshotDao(database: AppDatabase): NetWorthSnapshotDao {
+        return database.netWorthSnapshotDao()
     }
 }
