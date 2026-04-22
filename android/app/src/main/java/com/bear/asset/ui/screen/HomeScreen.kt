@@ -63,15 +63,16 @@ import com.bear.asset.data.repository.CategorySummary
 import com.bear.asset.domain.model.AssetCategory
 import com.bear.asset.ui.util.NumberFormatter
 
-private val PageBackground = Color(0xFFF7F8FA)
+private val PageBackground = Color(0xFFF8F9FB)
 private val BrandBlue = Color(0xFF3478F6)
-private val BrandBlueDeep = Color(0xFF2E6BE6)
-private val TextPrimary = Color(0xFF111827)
-private val TextSecondary = Color(0xFF6B7280)
-private val SuccessGreen = Color(0xFF55C777)
-private val DangerRed = Color(0xFFFF5B6D)
-private val WarningOrange = Color(0xFFFFA64D)
-private val Purple = Color(0xFF8557E8)
+private val BrandBlueDeep = Color(0xFF2F6FEA)
+private val TextPrimary = Color(0xFF101828)
+private val TextSecondary = Color(0xFF667085)
+private val CardWhite = Color.White
+private val SuccessGreen = Color(0xFF34C759)
+private val DangerRed = Color(0xFFFF375F)
+private val WarningOrange = Color(0xFFFF9F0A)
+private val Purple = Color(0xFF7B61FF)
 
 @Composable
 fun HomeScreen(
@@ -97,14 +98,14 @@ fun HomeScreen(
                 visible = contentVisible,
                 enter = fadeIn(animationSpec = tween(260)) + slideInVertically(
                     animationSpec = tween(360, easing = FastOutSlowInEasing),
-                    initialOffsetY = { it / 18 }
+                    initialOffsetY = { it / 22 }
                 )
             ) {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                        .padding(horizontal = 18.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     item {
                         NetWorthHeader(
@@ -115,13 +116,7 @@ fun HomeScreen(
                         )
                     }
                     item {
-                        Text(
-                            "资产分布",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = TextPrimary,
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
+                        SectionTitle("资产分布")
                     }
                     item {
                         AssetDistributionGrid(
@@ -129,7 +124,7 @@ fun HomeScreen(
                             onNavigateToCategory = onNavigateToCategory
                         )
                     }
-                    item { Spacer(modifier = Modifier.height(24.dp)) }
+                    item { Spacer(modifier = Modifier.height(28.dp)) }
                 }
             }
         }
@@ -152,37 +147,43 @@ private fun NetWorthHeader(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 16.dp),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+            .padding(top = 14.dp),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = CardWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(140.dp)
+                    .height(146.dp)
                     .background(Brush.linearGradient(colors = listOf(BrandBlue, BrandBlueDeep)))
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(54.dp)
+                        .height(58.dp)
                         .align(Alignment.BottomCenter)
-                        .background(Color.White.copy(alpha = 0.06f))
+                        .background(Color.White.copy(alpha = 0.055f))
                 )
-                Column(modifier = Modifier.fillMaxSize().padding(horizontal = 18.dp, vertical = 16.dp)) {
+                Column(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp, vertical = 17.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("净资产  CNY", style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.92f), fontWeight = FontWeight.Medium)
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Icon(Icons.Default.Visibility, contentDescription = null, tint = Color.White.copy(alpha = 0.72f), modifier = Modifier.size(16.dp))
+                        Text(
+                            "净资产  CNY",
+                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp),
+                            color = Color.White.copy(alpha = 0.92f),
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 1
+                        )
+                        Spacer(modifier = Modifier.width(7.dp))
+                        Icon(Icons.Default.Visibility, contentDescription = null, tint = Color.White.copy(alpha = 0.68f), modifier = Modifier.size(17.dp))
                         Spacer(modifier = Modifier.weight(1f))
                         AiPill(onClick = onNavigateToAi)
                     }
-                    Spacer(modifier = Modifier.height(22.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
                     Text(
                         NumberFormatter.formatCurrency(animatedNetWorth.toDouble()),
-                        style = MaterialTheme.typography.headlineLarge.copy(fontSize = 36.sp),
+                        style = MaterialTheme.typography.headlineLarge.copy(fontSize = 38.sp, lineHeight = 42.sp),
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
                         maxLines = 1,
@@ -193,8 +194,8 @@ private fun NetWorthHeader(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFFF8FAFF))
-                    .padding(vertical = 16.dp),
+                    .background(Color(0xFFFBFCFF))
+                    .padding(horizontal = 8.dp, vertical = 17.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 SummaryMetric("总资产", NumberFormatter.formatAbbreviated(totalAsset), SuccessGreen, Modifier.weight(1f))
@@ -213,24 +214,35 @@ private fun AiPill(onClick: () -> Unit) {
         modifier = Modifier
             .scale(scale)
             .clip(RoundedCornerShape(99.dp))
-            .background(Color.White.copy(alpha = 0.16f))
+            .background(Color.White.copy(alpha = 0.17f))
             .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
-            .padding(horizontal = 10.dp, vertical = 6.dp),
+            .padding(horizontal = 12.dp, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(Icons.Default.Analytics, contentDescription = null, tint = Color.White.copy(alpha = 0.88f), modifier = Modifier.size(14.dp))
-        Spacer(modifier = Modifier.width(4.dp))
-        Text("资产分析", style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.9f), maxLines = 1)
+        Icon(Icons.Default.Analytics, contentDescription = null, tint = Color.White.copy(alpha = 0.9f), modifier = Modifier.size(15.dp))
+        Spacer(modifier = Modifier.width(5.dp))
+        Text("资产分析", style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp), color = Color.White.copy(alpha = 0.92f), maxLines = 1)
     }
 }
 
 @Composable
 private fun SummaryMetric(label: String, value: String, color: Color, modifier: Modifier = Modifier) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(label, style = MaterialTheme.typography.bodySmall, color = TextSecondary, maxLines = 1)
-        Spacer(modifier = Modifier.height(6.dp))
-        Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(label, style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp), color = TextSecondary, maxLines = 1)
+        Spacer(modifier = Modifier.height(7.dp))
+        Text(value, style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp), fontWeight = FontWeight.Bold, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
+}
+
+@Composable
+private fun SectionTitle(title: String) {
+    Text(
+        title,
+        style = MaterialTheme.typography.titleLarge.copy(fontSize = 22.sp),
+        fontWeight = FontWeight.Bold,
+        color = TextPrimary,
+        modifier = Modifier.padding(top = 6.dp)
+    )
 }
 
 @Composable
@@ -241,9 +253,9 @@ private fun AssetDistributionGrid(
     val ordered = AssetCategory.entries.map { category ->
         summaries.firstOrNull { it.category == category } ?: emptySummary(category)
     }
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(13.dp)) {
         ordered.chunked(2).forEach { rowItems ->
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(13.dp)) {
                 rowItems.forEach { summary ->
                     DistributionTile(
                         summary = summary,
@@ -265,54 +277,59 @@ private fun DistributionTile(summary: CategorySummary, onClick: () -> Unit, modi
     val tint = getCategoryColor(summary.category)
     val isLiability = summary.category == AssetCategory.LIABILITY
     val interactionSource = remember { MutableInteractionSource() }
-    val scale by rememberPressScale(interactionSource, pressedScale = 0.975f)
+    val scale by rememberPressScale(interactionSource, pressedScale = 0.976f)
 
     Card(
         modifier = modifier
-            .height(104.dp)
+            .height(108.dp)
             .scale(scale)
             .clickable(interactionSource = interactionSource, indication = null, onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = CardWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 14.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 14.dp, vertical = 15.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
-                modifier = Modifier.size(40.dp).clip(RoundedCornerShape(10.dp)).background(tint),
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(tint),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(22.dp))
             }
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(11.dp))
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
                 Text(
                     summary.category.displayName,
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.titleSmall.copy(fontSize = 16.sp, lineHeight = 19.sp),
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Spacer(modifier = Modifier.height(5.dp))
+                Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     "${summary.assetCount}项${if (isLiability) "负债" else "资产"}",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
                     color = TextSecondary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
             }
-            Spacer(modifier = Modifier.width(6.dp))
+            Spacer(modifier = Modifier.width(5.dp))
             Text(
                 NumberFormatter.formatAbbreviated(summary.totalAmount),
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = 14.sp),
                 fontWeight = FontWeight.SemiBold,
                 color = if (isLiability) DangerRed else tint,
                 maxLines = 1,
-                overflow = TextOverflow.Clip
+                overflow = TextOverflow.Ellipsis
             )
         }
     }
@@ -346,8 +363,8 @@ private fun EmptyState(onAddAsset: () -> Unit) {
             .scale(scale)
             .clickable(interactionSource = interactionSource, indication = null, onClick = onAddAsset),
         shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        colors = CardDefaults.cardColors(containerColor = CardWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Box(modifier = Modifier.size(64.dp).clip(CircleShape).background(BrandBlue.copy(alpha = 0.10f)), contentAlignment = Alignment.Center) {
