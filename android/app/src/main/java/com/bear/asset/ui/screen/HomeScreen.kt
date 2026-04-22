@@ -6,6 +6,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -64,15 +65,16 @@ import com.bear.asset.domain.model.AssetCategory
 import com.bear.asset.ui.util.NumberFormatter
 
 private val PageBackground = Color(0xFFF8F9FB)
-private val BrandBlue = Color(0xFF3478F6)
+private val BrandBlue = Color(0xFF2563EB)
 private val BrandBlueDeep = Color(0xFF2F6FEA)
-private val TextPrimary = Color(0xFF101828)
-private val TextSecondary = Color(0xFF667085)
+private val BrandPurple = Color(0xFF7C3AED)
+private val TextPrimary = Color(0xFF111827)
+private val TextSecondary = Color(0xFF6B7280)
 private val CardWhite = Color.White
-private val SuccessGreen = Color(0xFF34C759)
-private val DangerRed = Color(0xFFFF375F)
-private val WarningOrange = Color(0xFFFF9F0A)
-private val Purple = Color(0xFF7B61FF)
+private val BorderLight = Color(0xFFEEF0F4)
+private val SuccessGreen = Color(0xFF16A34A)
+private val DangerRed = Color(0xFFEF4444)
+private val WarningOrange = Color(0xFFF59E0B)
 
 @Composable
 fun HomeScreen(
@@ -244,9 +246,9 @@ private fun AssetDistributionGrid(
     val ordered = AssetCategory.entries.map { category ->
         summaries.firstOrNull { it.category == category } ?: emptySummary(category)
     }
-    Column(verticalArrangement = Arrangement.spacedBy(13.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         ordered.chunked(2).forEach { rowItems ->
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(13.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 rowItems.forEach { summary ->
                     DistributionTile(
                         summary = summary,
@@ -272,58 +274,59 @@ private fun DistributionTile(summary: CategorySummary, onClick: () -> Unit, modi
 
     Card(
         modifier = modifier
-            .height(120.dp)
+            .height(132.dp)
             .scale(scale)
             .clickable(interactionSource = interactionSource, indication = null, onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = CardWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        border = BorderStroke(1.dp, BorderLight)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(14.dp),
+                .padding(16.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(42.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(tint),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(22.dp))
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    NumberFormatter.formatAbbreviated(summary.totalAmount),
-                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp),
-                    fontWeight = FontWeight.SemiBold,
-                    color = if (isLiability) DangerRed else tint,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
+            IconBubble(icon = icon, tint = tint, size = 44.dp, iconSize = 24.dp, rounded = true)
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     summary.category.displayName,
-                    style = MaterialTheme.typography.titleSmall.copy(fontSize = 16.sp, lineHeight = 20.sp),
+                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Spacer(modifier = Modifier.height(5.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    "${summary.assetCount}项${if (isLiability) "负债" else "资产"}",
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
-                    color = TextSecondary,
+                    "${summary.assetCount}项${if (isLiability) "负债" else "资产"} · ${NumberFormatter.formatAbbreviated(summary.totalAmount)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (summary.totalAmount == 0.0) TextSecondary else if (isLiability) DangerRed else tint,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun IconBubble(
+    icon: ImageVector,
+    tint: Color,
+    size: androidx.compose.ui.unit.Dp,
+    iconSize: androidx.compose.ui.unit.Dp,
+    rounded: Boolean = false
+) {
+    Box(
+        modifier = Modifier
+            .size(size)
+            .clip(if (rounded) RoundedCornerShape(14.dp) else CircleShape)
+            .background(tint.copy(alpha = 0.10f)),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(icon, contentDescription = null, modifier = Modifier.size(iconSize), tint = tint)
     }
 }
 
@@ -337,9 +340,9 @@ private fun getCategoryIcon(category: AssetCategory): ImageVector = when (catego
 
 private fun getCategoryColor(category: AssetCategory): Color = when (category) {
     AssetCategory.LIQUID -> BrandBlue
-    AssetCategory.INVESTMENT -> Purple
-    AssetCategory.RESTRICTED -> SuccessGreen
-    AssetCategory.PHYSICAL -> WarningOrange
+    AssetCategory.INVESTMENT -> SuccessGreen
+    AssetCategory.RESTRICTED -> WarningOrange
+    AssetCategory.PHYSICAL -> BrandPurple
     AssetCategory.LIABILITY -> DangerRed
 }
 
@@ -356,12 +359,11 @@ private fun EmptyState(onAddAsset: () -> Unit) {
             .clickable(interactionSource = interactionSource, indication = null, onClick = onAddAsset),
         shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = CardWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        border = BorderStroke(1.dp, BorderLight)
     ) {
         Column(modifier = Modifier.fillMaxWidth().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(modifier = Modifier.size(64.dp).clip(CircleShape).background(BrandBlue.copy(alpha = 0.10f)), contentAlignment = Alignment.Center) {
-                Icon(Icons.Default.AccountBalanceWallet, contentDescription = null, modifier = Modifier.size(34.dp), tint = BrandBlue)
-            }
+            IconBubble(icon = Icons.Default.AccountBalanceWallet, tint = BrandBlue, size = 64.dp, iconSize = 34.dp)
             Spacer(modifier = Modifier.height(16.dp))
             Text("开始记录你的资产", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
             Spacer(modifier = Modifier.height(8.dp))
