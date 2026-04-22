@@ -15,9 +15,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,8 +28,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -46,11 +48,10 @@ import com.bear.asset.ui.screen.HomeScreen
 import com.bear.asset.ui.screen.ReportScreen
 import com.bear.asset.ui.screen.SettingsScreen
 
-private val BrandBlue = Color(0xFF2563EB)
-private val BrandPurple = Color(0xFF7C3AED)
-private val TextSecondary = Color(0xFF6B7280)
-private val NavBackground = Color.White
-private val DividerColor = Color(0xFFEEF0F4)
+private val BrandBlue = Color(0xFF3478F6)
+private val BrandPurple = Color(0xFF6C4DFF)
+private val TextSecondary = Color(0xFF667085)
+private val FloatingNavBackground = Color.White.copy(alpha = 0.94f)
 
 object NavRoutes {
     const val LOGIN = "login"
@@ -71,22 +72,19 @@ fun AppNavigation(tokenManager: TokenManager) {
     val showBottomBar = currentDestination?.route in bottomBarRoutes
 
     Scaffold(
+        containerColor = Color.Transparent,
         bottomBar = {
             if (showBottomBar) {
-                ModernBottomBar(
+                FloatingBottomBar(
                     currentRoute = currentDestination?.route,
                     onNavigate = { route ->
                         navController.navigate(route) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
+                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                             launchSingleTop = true
                             restoreState = true
                         }
                     },
-                    onAddAsset = {
-                        navController.navigate(NavRoutes.ADD_ASSET)
-                    }
+                    onAddAsset = { navController.navigate(NavRoutes.ADD_ASSET) }
                 )
             }
         }
@@ -116,30 +114,22 @@ fun AppNavigation(tokenManager: TokenManager) {
 
             composable(BottomNavItem.Home.route) {
                 HomeScreen(
-                    onNavigateToAddAsset = {
-                        navController.navigate(NavRoutes.ADD_ASSET)
-                    },
+                    onNavigateToAddAsset = { navController.navigate(NavRoutes.ADD_ASSET) },
                     onNavigateToAi = {
                         navController.navigate(BottomNavItem.Ai.route) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
+                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                             launchSingleTop = true
                             restoreState = true
                         }
                     },
-                    onNavigateToCategory = { /* future: filter asset list */ }
+                    onNavigateToCategory = { }
                 )
             }
 
             composable(BottomNavItem.Assets.route) {
                 AssetScreen(
-                    onAddAsset = {
-                        navController.navigate(NavRoutes.ADD_ASSET)
-                    },
-                    onAssetClick = { assetId ->
-                        navController.navigate(NavRoutes.assetDetail(assetId))
-                    }
+                    onAddAsset = { navController.navigate(NavRoutes.ADD_ASSET) },
+                    onAssetClick = { assetId -> navController.navigate(NavRoutes.assetDetail(assetId)) }
                 )
             }
 
@@ -149,14 +139,10 @@ fun AppNavigation(tokenManager: TokenManager) {
             composable(BottomNavItem.Settings.route) {
                 SettingsScreen(
                     isLoggedIn = tokenManager.isLoggedIn(),
-                    onNavigateToLogin = {
-                        navController.navigate(NavRoutes.LOGIN)
-                    },
+                    onNavigateToLogin = { navController.navigate(NavRoutes.LOGIN) },
                     onLogout = {
                         navController.navigate(BottomNavItem.Home.route) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
+                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                             launchSingleTop = true
                             restoreState = true
                         }
@@ -175,36 +161,34 @@ fun AppNavigation(tokenManager: TokenManager) {
                 route = NavRoutes.ASSET_DETAIL,
                 arguments = listOf(navArgument("assetId") { type = NavType.LongType })
             ) {
-                AssetDetailScreen(
-                    onNavigateBack = { navController.popBackStack() }
-                )
+                AssetDetailScreen(onNavigateBack = { navController.popBackStack() })
             }
         }
     }
 }
 
 @Composable
-private fun ModernBottomBar(
+private fun FloatingBottomBar(
     currentRoute: String?,
     onNavigate: (String) -> Unit,
     onAddAsset: () -> Unit
 ) {
-    Surface(
-        color = NavBackground,
-        shadowElevation = 10.dp,
-        tonalElevation = 0.dp
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        contentAlignment = Alignment.BottomCenter
     ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(DividerColor)
-            )
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(28.dp),
+            colors = CardDefaults.cardColors(containerColor = FloatingNavBackground),
+            elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
+        ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(76.dp)
+                    .height(78.dp)
                     .padding(horizontal = 8.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -229,50 +213,53 @@ private fun BottomNavButton(
     val color = if (selected) BrandBlue else TextSecondary
     Column(
         modifier = modifier
+            .height(62.dp)
             .clip(RoundedCornerShape(18.dp))
             .clickable { onNavigate(item.route) }
-            .padding(vertical = 6.dp),
+            .padding(horizontal = 2.dp, vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
             modifier = Modifier
-                .height(28.dp)
+                .height(30.dp)
                 .clip(RoundedCornerShape(99.dp))
                 .background(if (selected) BrandBlue.copy(alpha = 0.10f) else Color.Transparent)
-                .padding(horizontal = if (selected) 12.dp else 0.dp),
+                .padding(horizontal = if (selected) 13.dp else 0.dp),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 item.icon,
                 contentDescription = item.label,
-                modifier = Modifier.size(21.dp),
+                modifier = Modifier.size(22.dp),
                 tint = color
             )
         }
-        Spacer(modifier = Modifier.height(3.dp))
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
             item.label,
             color = color,
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+            fontSize = 12.sp,
+            lineHeight = 13.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Clip,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium
         )
     }
 }
 
 @Composable
-private fun CenterAddButton(
-    onAddAsset: () -> Unit,
-    modifier: Modifier = Modifier
-) {
+private fun CenterAddButton(onAddAsset: () -> Unit, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
+            .height(62.dp)
             .clip(RoundedCornerShape(18.dp))
             .clickable(onClick = onAddAsset)
-            .padding(vertical = 4.dp),
+            .padding(horizontal = 2.dp, vertical = 1.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
             modifier = Modifier
-                .size(46.dp)
+                .size(48.dp)
                 .clip(CircleShape)
                 .background(Brush.linearGradient(listOf(BrandBlue, BrandPurple))),
             contentAlignment = Alignment.Center
@@ -280,11 +267,19 @@ private fun CenterAddButton(
             Icon(
                 Icons.Default.Add,
                 contentDescription = "添加资产",
-                modifier = Modifier.size(26.dp),
+                modifier = Modifier.size(27.dp),
                 tint = Color.White
             )
         }
-        Spacer(modifier = Modifier.height(2.dp))
-        Text("添加", color = BrandBlue, fontWeight = FontWeight.SemiBold)
+        Spacer(modifier = Modifier.height(1.dp))
+        Text(
+            "添加",
+            color = BrandBlue,
+            fontSize = 12.sp,
+            lineHeight = 13.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Clip,
+            fontWeight = FontWeight.SemiBold
+        )
     }
 }
