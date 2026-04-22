@@ -115,9 +115,7 @@ fun HomeScreen(
                             onNavigateToAi = onNavigateToAi
                         )
                     }
-                    item {
-                        SectionTitle("资产分布")
-                    }
+                    item { SectionTitle("资产分布") }
                     item {
                         AssetDistributionGrid(
                             summaries = uiState.categorySummaries,
@@ -159,13 +157,6 @@ private fun NetWorthHeader(
                     .height(146.dp)
                     .background(Brush.linearGradient(colors = listOf(BrandBlue, BrandBlueDeep)))
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(58.dp)
-                        .align(Alignment.BottomCenter)
-                        .background(Color.White.copy(alpha = 0.055f))
-                )
                 Column(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp, vertical = 17.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
@@ -281,39 +272,49 @@ private fun DistributionTile(summary: CategorySummary, onClick: () -> Unit, modi
 
     Card(
         modifier = modifier
-            .height(108.dp)
+            .height(120.dp)
             .scale(scale)
             .clickable(interactionSource = interactionSource, indication = null, onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = CardWhite),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 14.dp, vertical = 15.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(14.dp),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Box(
-                modifier = Modifier
-                    .size(42.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(tint),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(22.dp))
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(tint),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(22.dp))
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    NumberFormatter.formatAbbreviated(summary.totalAmount),
+                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp),
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (isLiability) DangerRed else tint,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
-            Spacer(modifier = Modifier.width(11.dp))
-            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
+            Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     summary.category.displayName,
-                    style = MaterialTheme.typography.titleSmall.copy(fontSize = 16.sp, lineHeight = 19.sp),
+                    style = MaterialTheme.typography.titleSmall.copy(fontSize = 16.sp, lineHeight = 20.sp),
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(5.dp))
                 Text(
                     "${summary.assetCount}项${if (isLiability) "负债" else "资产"}",
                     style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
@@ -322,15 +323,6 @@ private fun DistributionTile(summary: CategorySummary, onClick: () -> Unit, modi
                     overflow = TextOverflow.Ellipsis
                 )
             }
-            Spacer(modifier = Modifier.width(5.dp))
-            Text(
-                NumberFormatter.formatAbbreviated(summary.totalAmount),
-                style = MaterialTheme.typography.bodySmall.copy(fontSize = 14.sp),
-                fontWeight = FontWeight.SemiBold,
-                color = if (isLiability) DangerRed else tint,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
         }
     }
 }
