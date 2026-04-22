@@ -1,5 +1,6 @@
 package com.bear.asset.ui.screen
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,6 +38,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedButtonDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -73,6 +75,7 @@ private val SuccessGreen = Color(0xFF16A34A)
 private val DangerRed = Color(0xFFEF4444)
 private val WarningOrange = Color(0xFFF59E0B)
 private val BorderLight = Color(0xFFEEF0F4)
+private val FieldBackground = Color(0xFFFAFBFC)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -174,7 +177,8 @@ private fun CategoryCard(category: AssetCategory, onClick: () -> Unit, modifier:
         modifier = modifier.height(132.dp).clickable(onClick = onClick),
         shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        border = BorderStroke(1.dp, BorderLight)
     ) {
         Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.SpaceBetween) {
             IconBubble(icon = icon, tint = tint, size = 44.dp, iconSize = 24.dp, rounded = true)
@@ -224,7 +228,8 @@ private fun SubTypeSelectionStep(category: AssetCategory, onSelect: (AssetSubTyp
                     modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp).clickable { onSelect(subType) },
                     shape = RoundedCornerShape(18.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                    border = BorderStroke(1.dp, BorderLight)
                 ) {
                     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 15.dp), verticalAlignment = Alignment.CenterVertically) {
                         IconBubble(icon = getCategoryIcon(category), tint = tint, size = 38.dp, iconSize = 20.dp)
@@ -277,7 +282,8 @@ private fun AssetFormStep(state: AddAssetState, viewModel: AddAssetViewModel) {
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = DangerRed.copy(alpha = 0.08f)),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                border = BorderStroke(1.dp, DangerRed.copy(alpha = 0.14f))
             ) {
                 Text(
                     text = state.errorMessage!!,
@@ -293,10 +299,15 @@ private fun AssetFormStep(state: AddAssetState, viewModel: AddAssetViewModel) {
             modifier = Modifier.fillMaxWidth().height(54.dp),
             enabled = !state.isSaving,
             shape = RoundedCornerShape(18.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = tint)
+            colors = ButtonDefaults.buttonColors(
+                containerColor = tint,
+                disabledContainerColor = tint.copy(alpha = 0.38f),
+                disabledContentColor = Color.White.copy(alpha = 0.75f)
+            ),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 0.dp, disabledElevation = 0.dp)
         ) {
             if (state.isSaving) {
-                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.5.dp)
             } else {
                 Text("保存资产", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             }
@@ -313,7 +324,8 @@ private fun FormHeaderCard(category: AssetCategory, subType: AssetSubType) {
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        border = BorderStroke(1.dp, BorderLight)
     ) {
         Row(modifier = Modifier.fillMaxWidth().padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
             IconBubble(icon = getCategoryIcon(category), tint = tint, size = 48.dp, iconSize = 25.dp, rounded = true)
@@ -335,7 +347,8 @@ private fun FormSection(title: String, content: @Composable Column.() -> Unit) {
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+            border = BorderStroke(1.dp, BorderLight)
         ) {
             Column(modifier = Modifier.fillMaxWidth().padding(14.dp), content = content)
         }
@@ -365,8 +378,13 @@ private fun FormTextField(
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = BrandBlue,
             unfocusedBorderColor = BorderLight,
-            focusedContainerColor = Color(0xFFFAFBFC),
-            unfocusedContainerColor = Color(0xFFFAFBFC)
+            disabledBorderColor = BorderLight.copy(alpha = 0.72f),
+            errorBorderColor = DangerRed,
+            focusedLabelColor = BrandBlue,
+            cursorColor = BrandBlue,
+            focusedContainerColor = FieldBackground,
+            unfocusedContainerColor = FieldBackground,
+            disabledContainerColor = FieldBackground.copy(alpha = 0.7f)
         )
     )
 }
@@ -480,7 +498,9 @@ private fun CurrencySelector(selected: Currency, onSelect: (Currency) -> Unit) {
         OutlinedButton(
             onClick = { expanded = true },
             shape = RoundedCornerShape(16.dp),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            border = BorderStroke(1.dp, BorderLight),
+            colors = OutlinedButtonDefaults.outlinedButtonColors(containerColor = FieldBackground)
         ) {
             Text("${selected.symbol} ${selected.displayName}", color = TextPrimary, fontWeight = FontWeight.Medium)
         }
