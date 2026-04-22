@@ -274,7 +274,7 @@ private fun DistributionTile(summary: CategorySummary, onClick: () -> Unit, modi
 
     Card(
         modifier = modifier
-            .height(132.dp)
+            .height(112.dp)
             .scale(scale)
             .clickable(interactionSource = interactionSource, indication = null, onClick = onClick),
         shape = RoundedCornerShape(22.dp),
@@ -285,10 +285,21 @@ private fun DistributionTile(summary: CategorySummary, onClick: () -> Unit, modi
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(14.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            IconBubble(icon = icon, tint = tint, size = 44.dp, iconSize = 24.dp, rounded = true)
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                IconBubble(icon = icon, tint = tint, size = 36.dp, iconSize = 20.dp, rounded = true)
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    NumberFormatter.formatAbbreviated(summary.totalAmount),
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (summary.totalAmount == 0.0) TextSecondary else if (isLiability) DangerRed else tint,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     summary.category.displayName,
@@ -300,9 +311,9 @@ private fun DistributionTile(summary: CategorySummary, onClick: () -> Unit, modi
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    "${summary.assetCount}项${if (isLiability) "负债" else "资产"} · ${NumberFormatter.formatAbbreviated(summary.totalAmount)}",
+                    "${summary.assetCount}项${if (isLiability) "负债" else "资产"}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (summary.totalAmount == 0.0) TextSecondary else if (isLiability) DangerRed else tint,
+                    color = TextSecondary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -322,7 +333,7 @@ private fun IconBubble(
     Box(
         modifier = Modifier
             .size(size)
-            .clip(if (rounded) RoundedCornerShape(14.dp) else CircleShape)
+            .clip(if (rounded) RoundedCornerShape(12.dp) else CircleShape)
             .background(tint.copy(alpha = 0.10f)),
         contentAlignment = Alignment.Center
     ) {
