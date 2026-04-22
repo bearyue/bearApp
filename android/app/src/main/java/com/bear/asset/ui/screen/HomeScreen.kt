@@ -8,6 +8,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,6 +51,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -85,10 +88,7 @@ fun HomeScreen(
         if (!uiState.isLoading) contentVisible = true
     }
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = PageBackground
-    ) {
+    Surface(modifier = Modifier.fillMaxSize(), color = PageBackground) {
         if (uiState.isLoading) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = BrandBlue)
@@ -102,39 +102,17 @@ fun HomeScreen(
                 )
             ) {
                 LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
+                    modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     item { HeaderTitle() }
-
-                    item {
-                        NetWorthHeader(
-                            netWorth = uiState.netWorth,
-                            totalAsset = uiState.totalAsset,
-                            totalLiability = uiState.totalLiability,
-                            dailyChange = uiState.dailyChange,
-                            dailyChangePercent = uiState.dailyChangePercent
-                        )
-                    }
-
-                    item {
-                        QuickActions(
-                            onAddAsset = onNavigateToAddAsset,
-                            onAssets = { },
-                            onAi = onNavigateToAi
-                        )
-                    }
+                    item { NetWorthHeader(uiState.netWorth, uiState.totalAsset, uiState.totalLiability, uiState.dailyChange, uiState.dailyChangePercent) }
+                    item { QuickActions(onNavigateToAddAsset, onAssets = { }, onNavigateToAi) }
 
                     if (uiState.categorySummaries.isNotEmpty()) {
                         item { SectionHeader(title = "资产分布", action = "查看全部") }
                         items(uiState.categorySummaries) { summary ->
-                            CategoryCard(
-                                summary = summary,
-                                totalAsset = uiState.totalAsset,
-                                onClick = { onNavigateToCategory(summary.category) }
-                            )
+                            CategoryCard(summary = summary, totalAsset = uiState.totalAsset, onClick = { onNavigateToCategory(summary.category) })
                         }
                     } else {
                         item { EmptyState(onAddAsset = onNavigateToAddAsset) }
@@ -144,7 +122,6 @@ fun HomeScreen(
                         SectionHeader(title = "最近记录", action = null)
                         RecentEmptyCard()
                     }
-
                     item { Spacer(modifier = Modifier.height(24.dp)) }
                 }
             }
@@ -154,34 +131,15 @@ fun HomeScreen(
 
 @Composable
 private fun HeaderTitle() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 20.dp, bottom = 2.dp)
-    ) {
-        Text(
-            "资产总览",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            color = TextPrimary
-        )
+    Column(modifier = Modifier.fillMaxWidth().padding(top = 20.dp, bottom = 2.dp)) {
+        Text("资产总览", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = TextPrimary)
         Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            "清晰记录每一份资产变化",
-            style = MaterialTheme.typography.bodyMedium,
-            color = TextSecondary
-        )
+        Text("清晰记录每一份资产变化", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
     }
 }
 
 @Composable
-private fun NetWorthHeader(
-    netWorth: Double,
-    totalAsset: Double,
-    totalLiability: Double,
-    dailyChange: Double,
-    dailyChangePercent: Double
-) {
+private fun NetWorthHeader(netWorth: Double, totalAsset: Double, totalLiability: Double, dailyChange: Double, dailyChangePercent: Double) {
     val animatedNetWorth by animateFloatAsState(
         targetValue = netWorth.toFloat(),
         animationSpec = tween(durationMillis = 700, easing = FastOutSlowInEasing),
@@ -194,24 +152,12 @@ private fun NetWorthHeader(
         colors = CardDefaults.cardColors(containerColor = Color.Transparent),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Brush.linearGradient(colors = listOf(BrandBlue, BrandPurple)))
-                .padding(22.dp)
-        ) {
+        Column(modifier = Modifier.fillMaxWidth().background(Brush.linearGradient(colors = listOf(BrandBlue, BrandPurple))).padding(22.dp)) {
             Text("净资产", style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.78f))
             Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                NumberFormatter.formatCurrency(animatedNetWorth.toDouble()),
-                style = MaterialTheme.typography.headlineLarge.copy(fontSize = 36.sp),
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
+            Text(NumberFormatter.formatCurrency(animatedNetWorth.toDouble()), style = MaterialTheme.typography.headlineLarge.copy(fontSize = 36.sp), fontWeight = FontWeight.Bold, color = Color.White)
             Spacer(modifier = Modifier.height(8.dp))
-            val changeText = if (dailyChange == 0.0) {
-                "今日暂无变化"
-            } else {
+            val changeText = if (dailyChange == 0.0) "今日暂无变化" else {
                 val arrow = if (dailyChange >= 0) "▲" else "▼"
                 "$arrow 今日 ${NumberFormatter.formatWithSign(dailyChange)} (${NumberFormatter.formatPercent(dailyChangePercent)})"
             }
@@ -227,12 +173,7 @@ private fun NetWorthHeader(
 
 @Composable
 private fun HeaderMetric(label: String, value: String, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(Color.White.copy(alpha = 0.14f))
-            .padding(horizontal = 14.dp, vertical = 12.dp)
-    ) {
+    Column(modifier = modifier.clip(RoundedCornerShape(16.dp)).background(Color.White.copy(alpha = 0.14f)).padding(horizontal = 14.dp, vertical = 12.dp)) {
         Text(label, style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.72f))
         Spacer(modifier = Modifier.height(4.dp))
         Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = Color.White)
@@ -250,18 +191,18 @@ private fun QuickActions(onAddAsset: () -> Unit, onAssets: () -> Unit, onAi: () 
 
 @Composable
 private fun QuickActionButton(icon: ImageVector, label: String, tint: Color, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val scale by rememberPressScale(interactionSource, pressedScale = 0.965f)
+
     Card(
-        modifier = modifier.clickable(onClick = onClick),
+        modifier = modifier.scale(scale).clickable(interactionSource = interactionSource, indication = null, onClick = onClick),
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         border = CardDefaults.outlinedCardBorder()
     ) {
         Column(modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(
-                modifier = Modifier.size(34.dp).clip(CircleShape).background(tint.copy(alpha = 0.10f)),
-                contentAlignment = Alignment.Center
-            ) {
+            Box(modifier = Modifier.size(34.dp).clip(CircleShape).background(tint.copy(alpha = 0.10f)), contentAlignment = Alignment.Center) {
                 Icon(icon, contentDescription = null, modifier = Modifier.size(19.dp), tint = tint)
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -289,19 +230,18 @@ private fun CategoryCard(summary: CategorySummary, totalAsset: Double, onClick: 
         animationSpec = tween(durationMillis = 650, easing = FastOutSlowInEasing),
         label = "assetDistributionProgress"
     )
+    val interactionSource = remember { MutableInteractionSource() }
+    val scale by rememberPressScale(interactionSource, pressedScale = 0.982f)
 
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        modifier = Modifier.fillMaxWidth().scale(scale).clickable(interactionSource = interactionSource, indication = null, onClick = onClick),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier.size(44.dp).clip(RoundedCornerShape(14.dp)).background(tint.copy(alpha = 0.10f)),
-                    contentAlignment = Alignment.Center
-                ) {
+                Box(modifier = Modifier.size(44.dp).clip(RoundedCornerShape(14.dp)).background(tint.copy(alpha = 0.10f)), contentAlignment = Alignment.Center) {
                     Icon(icon, contentDescription = null, modifier = Modifier.size(24.dp), tint = tint)
                 }
                 Spacer(modifier = Modifier.width(12.dp))
@@ -311,23 +251,13 @@ private fun CategoryCard(summary: CategorySummary, totalAsset: Double, onClick: 
                     Text("${summary.assetCount}项资产", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                 }
                 Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        NumberFormatter.formatAbbreviated(summary.totalAmount),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isLiability) DangerRed else TextPrimary
-                    )
+                    Text(NumberFormatter.formatAbbreviated(summary.totalAmount), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = if (isLiability) DangerRed else TextPrimary)
                     Spacer(modifier = Modifier.height(2.dp))
                     Text("${(percent * 100).toInt()}%", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                 }
             }
             Spacer(modifier = Modifier.height(14.dp))
-            LinearProgressIndicator(
-                progress = { animatedProgress },
-                modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(99.dp)),
-                color = tint,
-                trackColor = BorderLight
-            )
+            LinearProgressIndicator(progress = { animatedProgress }, modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(99.dp)), color = tint, trackColor = BorderLight)
         }
     }
 }
@@ -350,35 +280,24 @@ private fun getCategoryColor(category: AssetCategory): Color = when (category) {
 
 @Composable
 private fun RecentEmptyCard() {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Text(
-            "暂无记录，添加资产后会在这里展示最近变化",
-            modifier = Modifier.fillMaxWidth().padding(18.dp),
-            style = MaterialTheme.typography.bodyMedium,
-            color = TextSecondary,
-            textAlign = TextAlign.Center
-        )
+    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp), colors = CardDefaults.cardColors(containerColor = Color.White), elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)) {
+        Text("暂无记录，添加资产后会在这里展示最近变化", modifier = Modifier.fillMaxWidth().padding(18.dp), style = MaterialTheme.typography.bodyMedium, color = TextSecondary, textAlign = TextAlign.Center)
     }
 }
 
 @Composable
 private fun EmptyState(onAddAsset: () -> Unit) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val scale by rememberPressScale(interactionSource, pressedScale = 0.982f)
+
     Card(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp).clickable(onClick = onAddAsset),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp).scale(scale).clickable(interactionSource = interactionSource, indication = null, onClick = onAddAsset),
         shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(
-                modifier = Modifier.size(64.dp).clip(CircleShape).background(BrandBlue.copy(alpha = 0.10f)),
-                contentAlignment = Alignment.Center
-            ) {
+            Box(modifier = Modifier.size(64.dp).clip(CircleShape).background(BrandBlue.copy(alpha = 0.10f)), contentAlignment = Alignment.Center) {
                 Icon(Icons.Default.AccountBalanceWallet, contentDescription = null, modifier = Modifier.size(34.dp), tint = BrandBlue)
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -387,4 +306,17 @@ private fun EmptyState(onAddAsset: () -> Unit) {
             Text("添加你的第一笔资产，掌握财务全貌", style = MaterialTheme.typography.bodyMedium, color = TextSecondary, textAlign = TextAlign.Center)
         }
     }
+}
+
+@Composable
+private fun rememberPressScale(
+    interactionSource: MutableInteractionSource,
+    pressedScale: Float
+): androidx.compose.runtime.State<Float> {
+    val pressed by interactionSource.collectIsPressedAsState()
+    return animateFloatAsState(
+        targetValue = if (pressed) pressedScale else 1f,
+        animationSpec = tween(durationMillis = 120, easing = FastOutSlowInEasing),
+        label = "pressScale"
+    )
 }
