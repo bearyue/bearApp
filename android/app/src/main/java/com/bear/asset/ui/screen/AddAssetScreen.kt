@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -37,6 +38,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -70,6 +72,7 @@ private val TextSecondary = Color(0xFF6B7280)
 private val SuccessGreen = Color(0xFF16A34A)
 private val DangerRed = Color(0xFFEF4444)
 private val WarningOrange = Color(0xFFF59E0B)
+private val BorderLight = Color(0xFFEEF0F4)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -144,96 +147,41 @@ private fun CategorySelectionStep(onSelect: (AssetCategory) -> Unit) {
             color = TextSecondary,
             modifier = Modifier.padding(bottom = 18.dp)
         )
-        CategoryGridRow(
-            left = AssetCategory.LIQUID,
-            right = AssetCategory.INVESTMENT,
-            onSelect = onSelect
-        )
+        CategoryGridRow(AssetCategory.LIQUID, AssetCategory.INVESTMENT, onSelect)
         Spacer(modifier = Modifier.height(12.dp))
-        CategoryGridRow(
-            left = AssetCategory.RESTRICTED,
-            right = AssetCategory.PHYSICAL,
-            onSelect = onSelect
-        )
+        CategoryGridRow(AssetCategory.RESTRICTED, AssetCategory.PHYSICAL, onSelect)
         Spacer(modifier = Modifier.height(12.dp))
         Row(modifier = Modifier.fillMaxWidth()) {
-            CategoryCard(
-                category = AssetCategory.LIABILITY,
-                onClick = { onSelect(AssetCategory.LIABILITY) },
-                modifier = Modifier.weight(1f)
-            )
+            CategoryCard(AssetCategory.LIABILITY, { onSelect(AssetCategory.LIABILITY) }, Modifier.weight(1f))
             Spacer(modifier = Modifier.weight(1f))
         }
     }
 }
 
 @Composable
-private fun CategoryGridRow(
-    left: AssetCategory,
-    right: AssetCategory,
-    onSelect: (AssetCategory) -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        CategoryCard(
-            category = left,
-            onClick = { onSelect(left) },
-            modifier = Modifier.weight(1f)
-        )
-        CategoryCard(
-            category = right,
-            onClick = { onSelect(right) },
-            modifier = Modifier.weight(1f)
-        )
+private fun CategoryGridRow(left: AssetCategory, right: AssetCategory, onSelect: (AssetCategory) -> Unit) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        CategoryCard(left, { onSelect(left) }, Modifier.weight(1f))
+        CategoryCard(right, { onSelect(right) }, Modifier.weight(1f))
     }
 }
 
 @Composable
-private fun CategoryCard(
-    category: AssetCategory,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
+private fun CategoryCard(category: AssetCategory, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val icon = getCategoryIcon(category)
     val tint = getCategoryColor(category)
     Card(
-        modifier = modifier
-            .height(132.dp)
-            .clickable(onClick = onClick),
+        modifier = modifier.height(132.dp).clickable(onClick = onClick),
         shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(tint.copy(alpha = 0.10f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(icon, contentDescription = null, modifier = Modifier.size(24.dp), tint = tint)
-            }
+        Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.SpaceBetween) {
+            IconBubble(icon = icon, tint = tint, size = 44.dp, iconSize = 24.dp, rounded = true)
             Column {
-                Text(
-                    category.displayName,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = TextPrimary
-                )
+                Text(category.displayName, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = TextPrimary)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    getCategoryDescription(category),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
-                )
+                Text(getCategoryDescription(category), style = MaterialTheme.typography.bodySmall, color = TextSecondary)
             }
         }
     }
@@ -264,62 +212,24 @@ private fun getCategoryDescription(category: AssetCategory): String = when (cate
 }
 
 @Composable
-private fun SubTypeSelectionStep(
-    category: AssetCategory,
-    onSelect: (AssetSubType) -> Unit
-) {
+private fun SubTypeSelectionStep(category: AssetCategory, onSelect: (AssetSubType) -> Unit) {
     val subTypes = AssetSubType.entries.filter { it.category == category }
     val tint = getCategoryColor(category)
 
     Surface(color = PageBackground, modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            Text(
-                "${category.displayName} · ${getCategoryDescription(category)}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = TextSecondary,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+        Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp)) {
+            Text("${category.displayName} · ${getCategoryDescription(category)}", style = MaterialTheme.typography.bodyMedium, color = TextSecondary, modifier = Modifier.padding(bottom = 16.dp))
             subTypes.forEach { subType ->
                 Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 5.dp)
-                        .clickable { onSelect(subType) },
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp).clickable { onSelect(subType) },
                     shape = RoundedCornerShape(18.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 15.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(38.dp)
-                                .clip(CircleShape)
-                                .background(tint.copy(alpha = 0.10f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                getCategoryIcon(category),
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp),
-                                tint = tint
-                            )
-                        }
+                    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 15.dp), verticalAlignment = Alignment.CenterVertically) {
+                        IconBubble(icon = getCategoryIcon(category), tint = tint, size = 38.dp, iconSize = 20.dp)
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            subType.displayName,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium,
-                            color = TextPrimary
-                        )
+                        Text(subType.displayName, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = TextPrimary)
                     }
                 }
             }
@@ -328,132 +238,251 @@ private fun SubTypeSelectionStep(
 }
 
 @Composable
-private fun AssetFormStep(
-    state: AddAssetState,
-    viewModel: AddAssetViewModel
-) {
+private fun AssetFormStep(state: AddAssetState, viewModel: AddAssetViewModel) {
     val subType = state.selectedSubType ?: return
+    val category = state.selectedCategory ?: subType.category
+    val tint = getCategoryColor(category)
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        OutlinedTextField(
-            value = state.name,
-            onValueChange = viewModel::updateName,
-            label = { Text("名称 *") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
+        FormHeaderCard(category = category, subType = subType)
 
-        CurrencySelector(
-            selected = state.currency,
-            onSelect = viewModel::updateCurrency
-        )
-
-        when (subType) {
-            AssetSubType.STOCK_A, AssetSubType.STOCK_HK, AssetSubType.STOCK_US -> {
-                OutlinedTextField(value = state.code, onValueChange = viewModel::updateCode, label = { Text("股票代码") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-                OutlinedTextField(value = state.quantity, onValueChange = viewModel::updateQuantity, label = { Text("持仓数量") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-                OutlinedTextField(value = state.cost, onValueChange = viewModel::updateCost, label = { Text("成本价") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-                OutlinedTextField(value = state.amount, onValueChange = viewModel::updateAmount, label = { Text("现价") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-            }
-            AssetSubType.PUBLIC_FUND -> {
-                OutlinedTextField(value = state.code, onValueChange = viewModel::updateCode, label = { Text("基金代码") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-                OutlinedTextField(value = state.quantity, onValueChange = viewModel::updateQuantity, label = { Text("持有份额") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-                OutlinedTextField(value = state.amount, onValueChange = viewModel::updateAmount, label = { Text("单位净值") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-            }
-            AssetSubType.BANK_FINANCIAL, AssetSubType.TIME_DEPOSIT, AssetSubType.LARGE_DEPOSIT -> {
-                OutlinedTextField(value = state.amount, onValueChange = viewModel::updateAmount, label = { Text("本金") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-                OutlinedTextField(value = state.rate, onValueChange = viewModel::updateRate, label = { Text("年利率 (%)") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-                OutlinedTextField(value = state.maturityDate, onValueChange = viewModel::updateMaturityDate, label = { Text("到期日 (yyyy-MM-dd)") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-            }
-            AssetSubType.ADVISOR, AssetSubType.CUSTOM_INVESTMENT -> {
-                OutlinedTextField(value = state.amount, onValueChange = viewModel::updateAmount, label = { Text("当前市值") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-                OutlinedTextField(value = state.cost, onValueChange = viewModel::updateCost, label = { Text("投入成本") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-            }
-            AssetSubType.PROVIDENT_FUND -> {
-                OutlinedTextField(value = state.amount, onValueChange = viewModel::updateAmount, label = { Text("账户余额") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-                OutlinedTextField(value = state.monthlyBase, onValueChange = viewModel::updateMonthlyBase, label = { Text("月缴存基数") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-                OutlinedTextField(value = state.personalRate, onValueChange = viewModel::updatePersonalRate, label = { Text("个人缴存比例 (%)") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-                OutlinedTextField(value = state.companyRate, onValueChange = viewModel::updateCompanyRate, label = { Text("单位缴存比例 (%)") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-            }
-            AssetSubType.INSURANCE -> {
-                OutlinedTextField(value = state.premiumPaid, onValueChange = viewModel::updatePremiumPaid, label = { Text("已缴保费") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-                OutlinedTextField(value = state.cashValue, onValueChange = viewModel::updateCashValue, label = { Text("现金价值") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-            }
-            AssetSubType.REAL_ESTATE, AssetSubType.VEHICLE -> {
-                OutlinedTextField(value = state.cost, onValueChange = viewModel::updateCost, label = { Text("购入价格") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-                OutlinedTextField(value = state.amount, onValueChange = viewModel::updateAmount, label = { Text("当前估值") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-            }
-            AssetSubType.MORTGAGE, AssetSubType.CAR_LOAN -> {
-                OutlinedTextField(value = state.totalLoan, onValueChange = viewModel::updateTotalLoan, label = { Text("贷款总额") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-                OutlinedTextField(value = state.remainingPrincipal, onValueChange = viewModel::updateRemainingPrincipal, label = { Text("剩余本金") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-                OutlinedTextField(value = state.monthlyPayment, onValueChange = viewModel::updateMonthlyPayment, label = { Text("月供") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-                OutlinedTextField(value = state.loanRate, onValueChange = viewModel::updateLoanRate, label = { Text("贷款利率 (%)") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-                OutlinedTextField(value = state.amount, onValueChange = viewModel::updateAmount, label = { Text("当前余额（用于资产计算）") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-            }
-            AssetSubType.CREDIT_CARD -> {
-                OutlinedTextField(value = state.amount, onValueChange = viewModel::updateAmount, label = { Text("待还金额") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-            }
-            else -> {
-                OutlinedTextField(value = state.amount, onValueChange = viewModel::updateAmount, label = { Text("金额") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
-            }
+        FormSection(title = "基础信息") {
+            FormTextField(value = state.name, onValueChange = viewModel::updateName, label = "名称 *")
+            Spacer(modifier = Modifier.height(12.dp))
+            CurrencySelector(selected = state.currency, onSelect = viewModel::updateCurrency)
         }
 
-        OutlinedTextField(
-            value = state.note,
-            onValueChange = viewModel::updateNote,
-            label = { Text("备注") },
-            modifier = Modifier.fillMaxWidth(),
-            minLines = 2,
-            maxLines = 4
-        )
+        FormSection(title = getDynamicSectionTitle(subType)) {
+            DynamicFields(subType = subType, state = state, viewModel = viewModel)
+        }
 
-        if (state.errorMessage != null) {
-            Text(
-                text = state.errorMessage!!,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
+        FormSection(title = "备注信息") {
+            FormTextField(
+                value = state.note,
+                onValueChange = viewModel::updateNote,
+                label = "备注",
+                minLines = 2,
+                maxLines = 4
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Button(
-            onClick = viewModel::save,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            enabled = !state.isSaving
-        ) {
-            if (state.isSaving) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    color = MaterialTheme.colorScheme.onPrimary
+        if (state.errorMessage != null) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = DangerRed.copy(alpha = 0.08f)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                Text(
+                    text = state.errorMessage!!,
+                    color = DangerRed,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(14.dp)
                 )
-            } else {
-                Text("保存", style = MaterialTheme.typography.titleMedium)
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Button(
+            onClick = viewModel::save,
+            modifier = Modifier.fillMaxWidth().height(54.dp),
+            enabled = !state.isSaving,
+            shape = RoundedCornerShape(18.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = tint)
+        ) {
+            if (state.isSaving) {
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
+            } else {
+                Text("保存资产", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
 @Composable
-private fun CurrencySelector(
-    selected: Currency,
-    onSelect: (Currency) -> Unit
+private fun FormHeaderCard(category: AssetCategory, subType: AssetSubType) {
+    val tint = getCategoryColor(category)
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(modifier = Modifier.fillMaxWidth().padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
+            IconBubble(icon = getCategoryIcon(category), tint = tint, size = 48.dp, iconSize = 25.dp, rounded = true)
+            Spacer(modifier = Modifier.width(14.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(subType.displayName, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text("${category.displayName} · ${getCategoryDescription(category)}", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+            }
+        }
+    }
+}
+
+@Composable
+private fun FormSection(title: String, content: @Composable Column.() -> Unit) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = TextPrimary, modifier = Modifier.padding(start = 2.dp, bottom = 8.dp))
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Column(modifier = Modifier.fillMaxWidth().padding(14.dp), content = content)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FormTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    minLines: Int = 1,
+    maxLines: Int = 1
 ) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        modifier = Modifier.fillMaxWidth(),
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+        singleLine = maxLines == 1,
+        minLines = minLines,
+        maxLines = maxLines,
+        shape = RoundedCornerShape(16.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = BrandBlue,
+            unfocusedBorderColor = BorderLight,
+            focusedContainerColor = Color(0xFFFAFBFC),
+            unfocusedContainerColor = Color(0xFFFAFBFC)
+        )
+    )
+}
+
+@Composable
+private fun DynamicFields(subType: AssetSubType, state: AddAssetState, viewModel: AddAssetViewModel) {
+    val fields = when (subType) {
+        AssetSubType.STOCK_A, AssetSubType.STOCK_HK, AssetSubType.STOCK_US -> listOf(
+            FieldSpec(state.code, viewModel::updateCode, "股票代码"),
+            FieldSpec(state.quantity, viewModel::updateQuantity, "持仓数量", KeyboardType.Decimal),
+            FieldSpec(state.cost, viewModel::updateCost, "成本价", KeyboardType.Decimal),
+            FieldSpec(state.amount, viewModel::updateAmount, "现价", KeyboardType.Decimal)
+        )
+        AssetSubType.PUBLIC_FUND -> listOf(
+            FieldSpec(state.code, viewModel::updateCode, "基金代码"),
+            FieldSpec(state.quantity, viewModel::updateQuantity, "持有份额", KeyboardType.Decimal),
+            FieldSpec(state.amount, viewModel::updateAmount, "单位净值", KeyboardType.Decimal)
+        )
+        AssetSubType.BANK_FINANCIAL, AssetSubType.TIME_DEPOSIT, AssetSubType.LARGE_DEPOSIT -> listOf(
+            FieldSpec(state.amount, viewModel::updateAmount, "本金", KeyboardType.Decimal),
+            FieldSpec(state.rate, viewModel::updateRate, "年利率 (%)", KeyboardType.Decimal),
+            FieldSpec(state.maturityDate, viewModel::updateMaturityDate, "到期日 (yyyy-MM-dd)")
+        )
+        AssetSubType.ADVISOR, AssetSubType.CUSTOM_INVESTMENT -> listOf(
+            FieldSpec(state.amount, viewModel::updateAmount, "当前市值", KeyboardType.Decimal),
+            FieldSpec(state.cost, viewModel::updateCost, "投入成本", KeyboardType.Decimal)
+        )
+        AssetSubType.PROVIDENT_FUND -> listOf(
+            FieldSpec(state.amount, viewModel::updateAmount, "账户余额", KeyboardType.Decimal),
+            FieldSpec(state.monthlyBase, viewModel::updateMonthlyBase, "月缴存基数", KeyboardType.Decimal),
+            FieldSpec(state.personalRate, viewModel::updatePersonalRate, "个人缴存比例 (%)", KeyboardType.Decimal),
+            FieldSpec(state.companyRate, viewModel::updateCompanyRate, "单位缴存比例 (%)", KeyboardType.Decimal)
+        )
+        AssetSubType.INSURANCE -> listOf(
+            FieldSpec(state.premiumPaid, viewModel::updatePremiumPaid, "已缴保费", KeyboardType.Decimal),
+            FieldSpec(state.cashValue, viewModel::updateCashValue, "现金价值", KeyboardType.Decimal)
+        )
+        AssetSubType.REAL_ESTATE, AssetSubType.VEHICLE -> listOf(
+            FieldSpec(state.cost, viewModel::updateCost, "购入价格", KeyboardType.Decimal),
+            FieldSpec(state.amount, viewModel::updateAmount, "当前估值", KeyboardType.Decimal)
+        )
+        AssetSubType.MORTGAGE, AssetSubType.CAR_LOAN -> listOf(
+            FieldSpec(state.totalLoan, viewModel::updateTotalLoan, "贷款总额", KeyboardType.Decimal),
+            FieldSpec(state.remainingPrincipal, viewModel::updateRemainingPrincipal, "剩余本金", KeyboardType.Decimal),
+            FieldSpec(state.monthlyPayment, viewModel::updateMonthlyPayment, "月供", KeyboardType.Decimal),
+            FieldSpec(state.loanRate, viewModel::updateLoanRate, "贷款利率 (%)", KeyboardType.Decimal),
+            FieldSpec(state.amount, viewModel::updateAmount, "当前余额（用于资产计算）", KeyboardType.Decimal)
+        )
+        AssetSubType.CREDIT_CARD -> listOf(
+            FieldSpec(state.amount, viewModel::updateAmount, "待还金额", KeyboardType.Decimal)
+        )
+        else -> listOf(
+            FieldSpec(state.amount, viewModel::updateAmount, "金额", KeyboardType.Decimal)
+        )
+    }
+
+    fields.forEachIndexed { index, field ->
+        FormTextField(
+            value = field.value,
+            onValueChange = field.onValueChange,
+            label = field.label,
+            keyboardType = field.keyboardType
+        )
+        if (index != fields.lastIndex) Spacer(modifier = Modifier.height(12.dp))
+    }
+}
+
+private data class FieldSpec(
+    val value: String,
+    val onValueChange: (String) -> Unit,
+    val label: String,
+    val keyboardType: KeyboardType = KeyboardType.Text
+)
+
+private fun getDynamicSectionTitle(subType: AssetSubType): String = when (subType) {
+    AssetSubType.STOCK_A, AssetSubType.STOCK_HK, AssetSubType.STOCK_US -> "持仓信息"
+    AssetSubType.PUBLIC_FUND -> "基金信息"
+    AssetSubType.BANK_FINANCIAL, AssetSubType.TIME_DEPOSIT, AssetSubType.LARGE_DEPOSIT -> "理财信息"
+    AssetSubType.ADVISOR, AssetSubType.CUSTOM_INVESTMENT -> "投资信息"
+    AssetSubType.PROVIDENT_FUND -> "公积金信息"
+    AssetSubType.INSURANCE -> "保险信息"
+    AssetSubType.REAL_ESTATE, AssetSubType.VEHICLE -> "估值信息"
+    AssetSubType.MORTGAGE, AssetSubType.CAR_LOAN, AssetSubType.CREDIT_CARD -> "负债信息"
+    else -> "金额信息"
+}
+
+@Composable
+private fun IconBubble(
+    icon: ImageVector,
+    tint: Color,
+    size: androidx.compose.ui.unit.Dp,
+    iconSize: androidx.compose.ui.unit.Dp,
+    rounded: Boolean = false
+) {
+    Box(
+        modifier = Modifier
+            .size(size)
+            .clip(if (rounded) RoundedCornerShape(14.dp) else CircleShape)
+            .background(tint.copy(alpha = 0.10f)),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(icon, contentDescription = null, modifier = Modifier.size(iconSize), tint = tint)
+    }
+}
+
+@Composable
+private fun CurrencySelector(selected: Currency, onSelect: (Currency) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
 
     Box {
-        OutlinedButton(onClick = { expanded = true }) {
-            Text("${selected.symbol} ${selected.displayName}")
+        OutlinedButton(
+            onClick = { expanded = true },
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("${selected.symbol} ${selected.displayName}", color = TextPrimary, fontWeight = FontWeight.Medium)
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             Currency.entries.forEach { currency ->
