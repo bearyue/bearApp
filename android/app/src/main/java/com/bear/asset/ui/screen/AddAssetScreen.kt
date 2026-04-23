@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,7 +39,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedButtonDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -221,7 +221,12 @@ private fun SubTypeSelectionStep(category: AssetCategory, onSelect: (AssetSubTyp
     val tint = getCategoryColor(category)
 
     Surface(color = PageBackground, modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
             Text("${category.displayName} · ${getCategoryDescription(category)}", style = MaterialTheme.typography.bodyMedium, color = TextSecondary, modifier = Modifier.padding(bottom = 16.dp))
             subTypes.forEach { subType ->
                 Card(
@@ -238,6 +243,7 @@ private fun SubTypeSelectionStep(category: AssetCategory, onSelect: (AssetSubTyp
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
@@ -340,7 +346,7 @@ private fun FormHeaderCard(category: AssetCategory, subType: AssetSubType) {
 }
 
 @Composable
-private fun FormSection(title: String, content: @Composable Column.() -> Unit) {
+private fun FormSection(title: String, content: @Composable ColumnScope.() -> Unit) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = TextPrimary, modifier = Modifier.padding(start = 2.dp, bottom = 8.dp))
         Card(
@@ -500,7 +506,7 @@ private fun CurrencySelector(selected: Currency, onSelect: (Currency) -> Unit) {
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier.fillMaxWidth(),
             border = BorderStroke(1.dp, BorderLight),
-            colors = OutlinedButtonDefaults.outlinedButtonColors(containerColor = FieldBackground)
+            colors = ButtonDefaults.outlinedButtonColors(containerColor = FieldBackground)
         ) {
             Text("${selected.symbol} ${selected.displayName}", color = TextPrimary, fontWeight = FontWeight.Medium)
         }

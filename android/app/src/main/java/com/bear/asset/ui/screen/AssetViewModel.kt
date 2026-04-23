@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -35,7 +36,7 @@ class AssetViewModel @Inject constructor(
     private val _expandedCategories = MutableStateFlow(AssetCategory.entries.toSet())
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val categoryGroups: StateFlow<List<CategoryGroup>> = _searchQuery
+    private val assets = _searchQuery
         .flatMapLatest { query ->
             if (query.isBlank()) {
                 repository.getAllAssets()
@@ -43,8 +44,9 @@ class AssetViewModel @Inject constructor(
                 repository.searchAssets(query)
             }
         }
-        .map { assets ->
-            val expanded = _expandedCategories.value
+
+    val categoryGroups: StateFlow<List<CategoryGroup>> = assets
+        .combine(_expandedCategories) { assets, expanded ->
             AssetCategory.entries.mapNotNull { category ->
                 val categoryAssets = assets.filter { it.category == category.name }
                 if (categoryAssets.isEmpty()) return@mapNotNull null

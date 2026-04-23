@@ -15,12 +15,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -64,7 +66,6 @@ import com.bear.asset.data.repository.CategorySummary
 import com.bear.asset.domain.model.AssetCategory
 import com.bear.asset.ui.util.NumberFormatter
 
-private val PageBackground = Color(0xFFF8F9FB)
 private val BrandBlue = Color(0xFF2563EB)
 private val BrandBlueDeep = Color(0xFF2F6FEA)
 private val BrandPurple = Color(0xFF7C3AED)
@@ -90,7 +91,7 @@ fun HomeScreen(
         if (!uiState.isLoading) contentVisible = true
     }
 
-    Surface(modifier = Modifier.fillMaxSize(), color = PageBackground) {
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         if (uiState.isLoading) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = BrandBlue)
@@ -106,8 +107,10 @@ fun HomeScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
+                        .statusBarsPadding()
                         .padding(horizontal = 18.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    contentPadding = PaddingValues(bottom = 96.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     item {
                         NetWorthHeader(
@@ -124,7 +127,6 @@ fun HomeScreen(
                             onNavigateToCategory = onNavigateToCategory
                         )
                     }
-                    item { Spacer(modifier = Modifier.height(28.dp)) }
                 }
             }
         }
@@ -234,7 +236,7 @@ private fun SectionTitle(title: String) {
         style = MaterialTheme.typography.titleLarge.copy(fontSize = 22.sp),
         fontWeight = FontWeight.Bold,
         color = TextPrimary,
-        modifier = Modifier.padding(top = 6.dp)
+        modifier = Modifier.padding(top = 2.dp)
     )
 }
 
@@ -246,9 +248,9 @@ private fun AssetDistributionGrid(
     val ordered = AssetCategory.entries.map { category ->
         summaries.firstOrNull { it.category == category } ?: emptySummary(category)
     }
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         ordered.chunked(2).forEach { rowItems ->
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 rowItems.forEach { summary ->
                     DistributionTile(
                         summary = summary,
@@ -274,10 +276,10 @@ private fun DistributionTile(summary: CategorySummary, onClick: () -> Unit, modi
 
     Card(
         modifier = modifier
-            .height(112.dp)
+            .height(96.dp)
             .scale(scale)
             .clickable(interactionSource = interactionSource, indication = null, onClick = onClick),
-        shape = RoundedCornerShape(22.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = CardWhite),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         border = BorderStroke(1.dp, BorderLight)
@@ -285,15 +287,15 @@ private fun DistributionTile(summary: CategorySummary, onClick: () -> Unit, modi
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(14.dp),
+                .padding(12.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                IconBubble(icon = icon, tint = tint, size = 36.dp, iconSize = 20.dp, rounded = true)
+                IconBubble(icon = icon, tint = tint, size = 32.dp, iconSize = 18.dp, rounded = true)
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
                     NumberFormatter.formatAbbreviated(summary.totalAmount),
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
                     fontWeight = FontWeight.SemiBold,
                     color = if (summary.totalAmount == 0.0) TextSecondary else if (isLiability) DangerRed else tint,
                     maxLines = 1,
@@ -309,7 +311,7 @@ private fun DistributionTile(summary: CategorySummary, onClick: () -> Unit, modi
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     "${summary.assetCount}项${if (isLiability) "负债" else "资产"}",
                     style = MaterialTheme.typography.bodySmall,
