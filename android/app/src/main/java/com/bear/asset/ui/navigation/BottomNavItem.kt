@@ -4,7 +4,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -37,14 +36,8 @@ sealed class BottomNavItem(
         icon = Icons.Default.Chat
     )
 
-    data object Settings : BottomNavItem(
-        route = "settings",
-        label = "设置",
-        icon = Icons.Default.Settings
-    )
-
     companion object {
         val items: List<BottomNavItem>
-            get() = listOf(Home, Assets, Report, Ai, Settings)
+            get() = listOf(Home, Assets, Report, Ai)
     }
 }

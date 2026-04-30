@@ -1,6 +1,7 @@
 package com.bear.asset.di
 
 import com.bear.asset.data.remote.ApiService
+import com.bear.asset.data.remote.ExchangeRateService
 import com.bear.asset.data.remote.RetrofitClient
 import com.bear.asset.network.AuthInterceptor
 import dagger.Module
@@ -13,6 +14,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
+import javax.inject.Named
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -55,5 +57,31 @@ object NetworkModule {
     @Singleton
     fun provideApiService(retrofit: Retrofit): ApiService {
         return retrofit.create(ApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    @Named("exchangeRateRetrofit")
+    fun provideExchangeRateRetrofit(loggingInterceptor: HttpLoggingInterceptor): Retrofit {
+        val okHttpClient = OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
+
+        return Retrofit.Builder()
+            .baseUrl("https://api.frankfurter.dev/")
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideExchangeRateService(
+        @Named("exchangeRateRetrofit") retrofit: Retrofit
+    ): ExchangeRateService {
+        return retrofit.create(ExchangeRateService::class.java)
     }
 }

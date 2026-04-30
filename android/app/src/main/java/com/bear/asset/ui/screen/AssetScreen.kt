@@ -48,6 +48,8 @@ import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -77,6 +79,7 @@ fun AssetScreen(
     val groups by viewModel.categoryGroups.collectAsState()
     val isEmpty by viewModel.isEmpty.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val displayCurrencies = remember { mutableStateMapOf<Long, Currency>() }
 
     Scaffold(containerColor = MaterialTheme.colorScheme.background) { padding ->
         Column(
@@ -168,9 +171,19 @@ fun AssetScreen(
                                 items = group.assets,
                                 key = { "asset_${it.id}" }
                             ) { asset ->
+                                val originalCurrency = parseCurrency(asset.currency)
+                                val displayCurrency = displayCurrencies[asset.id] ?: originalCurrency
                                 AssetItem(
                                     asset = asset,
+                                    displayCurrency = displayCurrency,
+                                    displayAmount = viewModel.convertAmount(asset.amount, originalCurrency, displayCurrency),
+                                    displayProfitLoss = calculateProfitLoss(asset)?.let {
+                                        viewModel.convertAmount(it, originalCurrency, displayCurrency)
+                                    },
                                     onClick = { onAssetClick(asset.id) },
+                                    onAmountClick = {
+                                        displayCurrencies[asset.id] = nextDisplayCurrency(displayCurrency)
+                                    },
                                     onDelete = { viewModel.deleteAsset(asset) }
                                 )
                             }
@@ -270,14 +283,13 @@ private fun getCategoryColor(category: AssetCategory): Color = when (category) {
 @Composable
 private fun AssetItem(
     asset: AssetEntity,
+    displayCurrency: Currency,
+    displayAmount: Double,
+    displayProfitLoss: Double?,
     onClick: () -> Unit,
+    onAmountClick: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val profitLoss = if (asset.cost != null && asset.quantity != null && asset.cost > 0) {
-        asset.amount - (asset.cost * asset.quantity)
-    } else null
-    val currencySymbol = try { Currency.valueOf(asset.currency).symbol } catch (_: Exception) { "¥" }
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -309,20 +321,42 @@ private fun AssetItem(
                     )
                 }
             }
-            Column(horizontalAlignment = Alignment.End) {
+            Column(
+                modifier = Modifier.clickable(onClick = onAmountClick),
+                horizontalAlignment = Alignment.End
+            ) {
                 Text(
-                    text = "$currencySymbol${NumberFormatter.formatAmount(asset.amount)}",
+                    text = "${displayCurrency.symbol}${NumberFormatter.formatAmount(displayAmount)}",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.SemiBold
                 )
-                if (profitLoss != null) {
+                if (displayProfitLoss != null) {
                     Text(
-                        text = NumberFormatter.formatWithSign(profitLoss),
+                        text = NumberFormatter.formatWithSign(displayProfitLoss, displayCurrency),
                         style = MaterialTheme.typography.bodySmall,
-                        color = if (profitLoss >= 0) Color(0xFF4CAF50) else Color(0xFFF44336)
+                        color = if (displayProfitLoss >= 0) Color(0xFFF44336) else Color(0xFF4CAF50)
                     )
                 }
             }
         }
+    }
+}
+
+private fun calculateProfitLoss(asset: AssetEntity): Double? {
+    val cost = asset.cost ?: return null
+    val quantity = asset.quantity ?: return null
+    if (cost <= 0.0) return null
+    return asset.amount - (cost * quantity)
+}
+
+private fun parseCurrency(value: String): Currency {
+    return runCatching { Currency.valueOf(value) }.getOrDefault(Currency.CNY)
+}
+
+private fun nextDisplayCurrency(current: Currency): Currency {
+    return when (current) {
+        Currency.CNY -> Currency.HKD
+        Currency.HKD -> Currency.USD
+        Currency.USD -> Currency.CNY
     }
 }

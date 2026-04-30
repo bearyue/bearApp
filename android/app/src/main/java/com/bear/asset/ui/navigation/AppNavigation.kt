@@ -51,6 +51,7 @@ object NavRoutes {
     const val LOGIN = "login"
     const val ADD_ASSET = "addAsset"
     const val ASSET_DETAIL = "assetDetail/{assetId}"
+    const val SETTINGS = "settings"
 
     fun assetDetail(assetId: Long) = "assetDetail/$assetId"
 }
@@ -99,6 +100,7 @@ fun AppNavigation(tokenManager: TokenManager) {
                             restoreState = true
                         }
                     },
+                    onNavigateToSettings = { navController.navigate(NavRoutes.SETTINGS) },
                     onNavigateToCategory = { }
                 )
             }
@@ -113,9 +115,10 @@ fun AppNavigation(tokenManager: TokenManager) {
             composable(BottomNavItem.Report.route) { ReportScreen() }
             composable(BottomNavItem.Ai.route) { AiScreen() }
 
-            composable(BottomNavItem.Settings.route) {
+            composable(NavRoutes.SETTINGS) {
                 SettingsScreen(
                     isLoggedIn = tokenManager.isLoggedIn(),
+                    onNavigateBack = { navController.popBackStack() },
                     onNavigateToLogin = { navController.navigate(NavRoutes.LOGIN) },
                     onLogout = {
                         navController.navigate(BottomNavItem.Home.route) {

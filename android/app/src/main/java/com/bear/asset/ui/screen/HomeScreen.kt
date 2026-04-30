@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Card
@@ -81,6 +82,7 @@ private val WarningOrange = Color(0xFFF59E0B)
 fun HomeScreen(
     onNavigateToAddAsset: () -> Unit = {},
     onNavigateToAi: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {},
     onNavigateToCategory: (AssetCategory) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -117,7 +119,8 @@ fun HomeScreen(
                             netWorth = uiState.netWorth,
                             totalAsset = uiState.totalAsset,
                             totalLiability = uiState.totalLiability,
-                            onNavigateToAi = onNavigateToAi
+                            onNavigateToAi = onNavigateToAi,
+                            onNavigateToSettings = onNavigateToSettings
                         )
                     }
                     item { SectionTitle("资产分布") }
@@ -138,7 +141,8 @@ private fun NetWorthHeader(
     netWorth: Double,
     totalAsset: Double,
     totalLiability: Double,
-    onNavigateToAi: () -> Unit
+    onNavigateToAi: () -> Unit,
+    onNavigateToSettings: () -> Unit
 ) {
     val animatedNetWorth by animateFloatAsState(
         targetValue = netWorth.toFloat(),
@@ -174,6 +178,8 @@ private fun NetWorthHeader(
                         Icon(Icons.Default.Visibility, contentDescription = null, tint = Color.White.copy(alpha = 0.68f), modifier = Modifier.size(17.dp))
                         Spacer(modifier = Modifier.weight(1f))
                         AiPill(onClick = onNavigateToAi)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        SettingsButton(onClick = onNavigateToSettings)
                     }
                     Spacer(modifier = Modifier.height(24.dp))
                     Text(
@@ -198,6 +204,23 @@ private fun NetWorthHeader(
                 SummaryMetric("净资产", NumberFormatter.formatAbbreviated(netWorth), BrandBlueDeep, Modifier.weight(1f))
             }
         }
+    }
+}
+
+@Composable
+private fun SettingsButton(onClick: () -> Unit) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val scale by rememberPressScale(interactionSource, 0.94f)
+    Box(
+        modifier = Modifier
+            .size(32.dp)
+            .scale(scale)
+            .clip(CircleShape)
+            .background(Color.White.copy(alpha = 0.17f))
+            .clickable(interactionSource = interactionSource, indication = null, onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(Icons.Default.Settings, contentDescription = "设置", tint = Color.White.copy(alpha = 0.9f), modifier = Modifier.size(18.dp))
     }
 }
 
